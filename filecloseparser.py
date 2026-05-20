@@ -35,7 +35,7 @@ def closes_all_filestreams(file: TextIOWrapper) -> bool:
     """Returns `True` if all filestreams in `file` were closed."""
     fstreams = identify_filestreams(file)
     results = check_for_closes(file, fstreams)
-    return False in results
+    return False not in results
 
 if __name__ == "__main__":
     result = None
