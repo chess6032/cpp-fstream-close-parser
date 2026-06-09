@@ -4,7 +4,6 @@ import re
 from typing import Callable
 from dataclasses import dataclass
 
-
 class FileCloseParser:
     def __init__(self, file: TextIOWrapper):
         self.source_code = file
