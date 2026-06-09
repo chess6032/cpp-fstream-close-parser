@@ -73,6 +73,7 @@ class FileCloseParser:
 
     def walk_through_file(self) -> None:
         for line in self.source_code:
+            # TODO: check for multiple statements in a single line
             self.process_line(line.rstrip())
 
     def process_line(self, line:str) -> None:
