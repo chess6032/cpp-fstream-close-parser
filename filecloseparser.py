@@ -4,10 +4,13 @@ import re
 from typing import Callable
 from dataclasses import dataclass
 
+
 class FileCloseParser:
     def __init__(self, file: TextIOWrapper):
-        self.file = file
-        self.fstreams = []
+        self.source_code = file
+        self.fstreams = {} # name: fstream (where name matches fstream.name)
+
+        self.match_with_dec: Callable[[str],"FileCloseParser.Fstream | None"] = FileCloseParser.declaration_matcher()
 
     @dataclass
     class Fstream:
@@ -18,7 +21,7 @@ class FileCloseParser:
     # static methods that return a function that does some regex shih
 
     @staticmethod
-    def match_with_declaration() -> Callable[[str], FileCloseParser.Fstream | None]:
+    def declaration_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
         """
         Returns a function that takes in a `str` and returns a `Fstream` if the inputted 
         string contains a fstream declaration (or initialization).
@@ -59,17 +62,17 @@ class FileCloseParser:
         return matcher
 
     @staticmethod
-    def match_with_open(line: str) -> Callable:
-        return lambda: None
+    def open_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
+        return lambda x: None
 
     @staticmethod
-    def match_with_close(line: str) -> Callable:
-        return lambda: None
+    def close_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
+        return lambda x: None
 
     # the actual parsing & checking stuff for fstream closing
 
     def walk_through_file(self) -> None:
-        for line in self.file:
+        for line in self.source_code:
             self.process_line(line.rstrip())
 
     def process_line(self, line:str) -> None:
