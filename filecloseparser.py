@@ -1,14 +1,13 @@
 import sys
-from io import TextIOWrapper
 import re
 from dataclasses import dataclass
 
-from typing import Callable, Optional
+from typing import Callable, Optional, TextIO
 
 class FileCloseParser:
-    def __init__(self, file: TextIOWrapper):
+    def __init__(self, file: TextIO):
         self.source_code = file
-        self.fstreams = {} # name: fstream (where name matches fstream.name)
+        self.fstreams = []
 
         self.match_with_dec: Callable[[str], Optional[FileCloseParser.Fstream]] = FileCloseParser.declaration_matcher()
 
@@ -62,11 +61,11 @@ class FileCloseParser:
         return matcher
 
     @staticmethod
-    def open_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
+    def open_matcher():
         return lambda x: None
 
     @staticmethod
-    def close_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
+    def close_matcher():
         return lambda x: None
 
     # the actual parsing & checking stuff for fstream closing
@@ -77,7 +76,8 @@ class FileCloseParser:
             self.process_line(line.rstrip())
 
     def process_line(self, line:str) -> None:
-        pass
+        if (fstream := self.match_with_dec(line)):
+            self.fstreams.append(fstream)
 
 
 if __name__ == "__main__":
