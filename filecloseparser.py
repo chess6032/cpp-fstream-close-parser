@@ -1,15 +1,16 @@
 import sys
 from io import TextIOWrapper
 import re
-from typing import Callable
 from dataclasses import dataclass
+
+from typing import Callable, Optional
 
 class FileCloseParser:
     def __init__(self, file: TextIOWrapper):
         self.source_code = file
         self.fstreams = {} # name: fstream (where name matches fstream.name)
 
-        self.match_with_dec: Callable[[str],"FileCloseParser.Fstream | None"] = FileCloseParser.declaration_matcher()
+        self.match_with_dec: Callable[[str], Optional[FileCloseParser.Fstream]] = FileCloseParser.declaration_matcher()
 
     @dataclass
     class Fstream:
@@ -20,7 +21,7 @@ class FileCloseParser:
     # static methods that return a function that does some regex shih
 
     @staticmethod
-    def declaration_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
+    def declaration_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
         """
         Returns a function that takes in a `str` and returns a `Fstream` if the inputted 
         string contains a fstream declaration (or initialization).
@@ -48,7 +49,7 @@ class FileCloseParser:
             re.VERBOSE,
         )
 
-        def matcher(line: str) -> FileCloseParser.Fstream | None:
+        def matcher(line: str) -> Optional[FileCloseParser.Fstream]:
             match = pattern.match(line)
             if not match:
                 return None
@@ -61,11 +62,11 @@ class FileCloseParser:
         return matcher
 
     @staticmethod
-    def open_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
+    def open_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
         return lambda x: None
 
     @staticmethod
-    def close_matcher() -> Callable[[str], "FileCloseParser.Fstream | None"]:
+    def close_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
         return lambda x: None
 
     # the actual parsing & checking stuff for fstream closing
