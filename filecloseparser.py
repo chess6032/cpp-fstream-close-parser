@@ -2,21 +2,61 @@ import sys
 from io import TextIOWrapper
 import re
 from typing import Callable
+from dataclasses import dataclass
 
 class FileCloseParser:
     def __init__(self, file: TextIOWrapper):
         self.file = file
         self.fstreams = []
 
+    @dataclass
     class Fstream:
-        def __init__(self, name:str):
-            self.name = name
+        name: str
+        opened: bool = False
+        closed: bool = False
 
     # static methods that return a function that does some regex shih
 
     @staticmethod
-    def match_with_declaration(line: str) -> Callable:
-        return lambda: None
+    def match_with_declaration() -> Callable[[str], FileCloseParser.Fstream | None]:
+        """
+        Returns a function that takes in a `str` and returns a `Fstream` if the inputted 
+        string contains a fstream declaration (or initialization).
+
+        * Compatible with std::fstream, std::ifstream, std::ofstream, with or without `std::` pre-pending it.  
+        * Compatible with raw declarations (`ifstream infile`), initializations (`ifstream infile("file.txt")`),
+        or bracket initializations (`ifstream infile{"data.txt"}`).  
+        * Compatible with `const`, `static`, and `extern` declarations.
+        """
+        pattern = re.compile(
+            r"""
+            ^\s*
+            (?:(?:const|static|extern|mutable|register)\s+)*
+            (?:std::)?
+            (?:f|if|of)stream
+            \s+
+            (?P<name>[A-Za-z_]\w*)
+            \s*
+            (?:
+                ;                                   # declaration only
+                |
+                (?P<init>\([^;]*\)|\{[^;]*\})\s*;  # initialized/opened
+            )
+            """,
+            re.VERBOSE,
+        )
+
+        def matcher(line: str) -> FileCloseParser.Fstream | None:
+            match = pattern.match(line)
+            if not match:
+                return None
+
+            return FileCloseParser.Fstream(
+                name=match.group("name"),
+                opened=match.group("init") is not None,
+            )
+
+        return matcher
 
     @staticmethod
     def match_with_open(line: str) -> Callable:
