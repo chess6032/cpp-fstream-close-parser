@@ -32,8 +32,6 @@ class FileCloseParser:
         * Intended to be compatible with `const`, `static`, and `extern` declarations. (I've never actually tested this...but what student is gonna do that anyway.)  
         """
 
-        # FIXME: currently marking empty bracket initializations as OPENED. (e.g., `std::ifstream infile{};` would an Fstream whose opened attribute is True.)
-
         pattern = re.compile(
             r"""
             ^\s*
@@ -57,9 +55,10 @@ class FileCloseParser:
             if not match:
                 return None
 
+            init = match.group("init")
             return FileCloseParser.Fstream(
                 name=match.group("name"),
-                opened=match.group("init") is not None,
+                opened=init is not None and bool(re.search(r'[^(){}\s]', init)),
             )
 
         return matcher
