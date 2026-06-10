@@ -28,8 +28,12 @@ class FileCloseParser:
         * Compatible with std::fstream, std::ifstream, std::ofstream, with or without `std::` pre-pending it.  
         * Compatible with raw declarations (`ifstream infile`), initializations (`ifstream infile("file.txt")`),
         or bracket initializations (`ifstream infile{"data.txt"}`).  
-        * Compatible with `const`, `static`, and `extern` declarations.
+        * Compatible with intializations that take in string literals (`ifstream infile("name.txt")`) or objects (`ifstream infile(filepath)`)  
+        * Intended to be compatible with `const`, `static`, and `extern` declarations. (I've never actually tested this...but what student is gonna do that anyway.)  
         """
+
+        # FIXME: currently marking empty bracket initializations as OPENED. (e.g., `std::ifstream infile{};` would an Fstream whose opened attribute is True.)
+
         pattern = re.compile(
             r"""
             ^\s*
