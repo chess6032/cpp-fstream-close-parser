@@ -12,17 +12,59 @@ def check_matcher(file):
             print(line)
 
 def test_parser(file):
+    found = []
+    SHOULD_HAVE_FOUND = [
+        'uF1',
+        'uF2',
+        'uF3',
+        'uF4',
+        'oF1',
+        'oF2',
+        'oF3',
+        'oF4',
+        'oF5',
+        'oF6',
+        'oF7',
+        'oF8',
+        'u_cmt_test1',
+        'u_cmt_test2',
+        'u_indent0',
+        'u_indent1',
+        'u_indent2',
+        'u_indent3',
+        'u_indent4',
+        'u_indent_many',
+        'u_indent_t1',
+        'u_indent_t4',
+        'u_ifstatement1',
+        'u_ifstatement2',
+        'u_ifstatement3',
+    ]
+
     parser = FileCloseParser(file=file)
     parser.walk_through_file()
+
     for fstream in parser.fstreams:
         name = fstream.name
+        found.append(fstream.name)
+
         print(name)
+        assert name in SHOULD_HAVE_FOUND, f"FAIL: FALSE POSITIVE: {name}"
+
         if name[0] == 'u':
-            assert not fstream.opened
+            assert not fstream.opened, f"FAIL: {name} incorrectly marked as opened"
         elif name[0] == 'o':
-            assert fstream.opened
+            assert fstream.opened, f"FAIL: {name} incorrectly marked as UN-opened"
         else:
-            raise RuntimeError(f"incorrect match")
+            raise RuntimeError(f"FAIL: incorrect match")
+
+    print()
+
+    for required in SHOULD_HAVE_FOUND:
+        try:
+            assert required in found, f"FAIL: FALSE NEGATIVE: {required}"
+        except AssertionError as e:
+            print(e)
 
 
 if __name__ == "__main__":

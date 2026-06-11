@@ -21,20 +21,8 @@ class FileCloseParser:
 
     @staticmethod
     def declaration_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
-        """
-        Returns a function that takes in a `str` and returns a `Fstream` if the inputted 
-        string contains a fstream declaration (or initialization).
-
-        * Compatible with std::fstream, std::ifstream, std::ofstream, with or without `std::` pre-pending it.  
-        * Compatible with raw declarations (`ifstream infile`), initializations (`ifstream infile("file.txt")`),
-        or bracket initializations (`ifstream infile{"data.txt"}`).  
-        * Compatible with intializations that take in string literals (`ifstream infile("name.txt")`) or objects (`ifstream infile(filepath)`)  
-        * Intended to be compatible with `const`, `static`, and `extern` declarations. (I've never actually tested this...but what student is gonna do that anyway.)  
-        """
-
         pattern = re.compile(
             r"""
-            ^\s*
             (?:(?:const|static|extern|mutable|register)\s+)*
             (?:std::)?
             (?:f|if|of)stream
@@ -42,23 +30,22 @@ class FileCloseParser:
             (?P<name>[A-Za-z_]\w*)
             \s*
             (?:
-                ;                                   # declaration only
-                |
-                (?P<init>\([^;]*\)|\{[^;]*\})\s*;  # initialized/opened
-            )
+                (?P<init>\([^;]*\)|\{[^;]*\})\s*
+            )?
+            ;?
             """,
             re.VERBOSE,
         )
 
-        def matcher(line: str) -> Optional[FileCloseParser.Fstream]:
-            match = pattern.match(line)
+        def matcher(statement: str) -> Optional[FileCloseParser.Fstream]:
+            match = pattern.fullmatch(statement)
             if not match:
                 return None
 
             init = match.group("init")
             return FileCloseParser.Fstream(
                 name=match.group("name"),
-                opened=init is not None and bool(re.search(r'[^(){}\s]', init)),
+                opened=init is not None and bool(re.search(r"[^(){}\s]", init)),
             )
 
         return matcher
@@ -75,8 +62,8 @@ class FileCloseParser:
 
     def walk_through_file(self) -> None:
         for line in self.source_code:
-            # TODO: check for multiple statements in a single line
-            self.process_line(line.rstrip())
+            # TODO: strip lines into individual statements
+            self.process_line(line.strip())
 
     def process_line(self, line:str) -> None:
         if (fstream := self.match_with_dec(line)):

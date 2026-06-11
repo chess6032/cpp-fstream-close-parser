@@ -9,7 +9,7 @@ This contains all possible ways we'd expect a student to format a
 declaration or initialization of an std::ifstream.
 */
 
-int main() {
+int main(int argc, char *argv[]) {
     string filepath = "hello.txt";
 
     ifstream uF1;
@@ -31,4 +31,23 @@ int main() {
     // std::ifstream line_commented_2;
     std::ifstream u_cmt_test2; /* std::ifstream comment1; */
     /* std::ifstream comment2; */
+
+    // different indentations
+std::ifstream u_indent0;
+ std::ifstream u_indent1;
+  std::ifstream u_indent2;
+   std::ifstream u_indent3;
+    std::ifstream u_indent4;
+                                std::ifstream u_indent_many;
+	std::ifstream u_indent_t1;
+				std::ifstream u_indent_t4;
+
+    { std::ifstream u_inbrackets; }
+    if (argc > 1) {
+        std::ifstream u_ifstatement1;
+    }
+    if (argc > 2) { std::ifstream u_ifstatement2; }
+    if (argc > 3) std::ifstream u_ifstatement3;
+
+    return 0;
 }
