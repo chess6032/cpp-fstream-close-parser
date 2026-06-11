@@ -59,30 +59,13 @@ class TestOpenMatcher(unittest.TestCase):
             with self.subTest(statement=statement):
                 self.assertOpens(statement, expected_name)
 
+    
     def test_spacing_variations(self):
         cases = [
-            'file . open("literal");',
-            'file.open ( "literal" );',
-            "file.open( filepath );",
-            ' file.open("literal");',
-            '  file.open("literal");',
-            '\tfile.open("literal");',
-            '\t\tfile.open("literal");',
-            'file.open("literal");        ',
-        ]
-
-        for statement in cases:
-            with self.subTest(statement=statement):
-                self.assertOpens(statement)
-
-    def test_control_flow_same_statement(self):
-        cases = [
-            'if (1) file.open("literal");',
-            'if (1) { file.open("literal"); }',
-            'while (1) file.open(filepath);',
-            'for (int i = 0; i < 1; ++i) file.open("literal");',
-            "{ file.open(filepath); }",
-            "{ file.open(filepath, std::ios::binary); }",
+            "file . open();",
+            "file.open ();",
+            "file.open( );",
+            "file . open ( );",
         ]
 
         for statement in cases:

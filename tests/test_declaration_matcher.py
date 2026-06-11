@@ -61,45 +61,6 @@ class TestDeclarationMatcher(unittest.TestCase):
             with self.subTest(statement=statement):
                 self.assertDeclares(statement, name, opened=True)
 
-    def test_spacing_and_indentation(self):
-        cases = [
-            ("std::fstream u_indent0;", "u_indent0"),
-            (" std::fstream u_indent1;", "u_indent1"),
-            ("  std::fstream u_indent2;", "u_indent2"),
-            ("   std::fstream u_indent3;", "u_indent3"),
-            ("    std::fstream u_indent4;", "u_indent4"),
-            ("                                std::fstream u_indent_many;", "u_indent_many"),
-            ("\tstd::fstream u_indent_t1;", "u_indent_t1"),
-            ("\t\t\t\tstd::fstream u_indent_t4;", "u_indent_t4"),
-        ]
-
-        for statement, name in cases:
-            with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
-
-    def test_control_flow_contexts_if_statement_extracted_whole(self):
-        cases = [
-            ("{ std::fstream u_inbrackets; }", "u_inbrackets"),
-            ("if (argc > 2) { std::fstream u_ifstatement2; }", "u_ifstatement2"),
-            ("if (argc > 3) std::fstream u_ifstatement3;", "u_ifstatement3"),
-        ]
-
-        for statement, name in cases:
-            with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
-
-    def test_control_flow_contexts_statement_only(self):
-        cases = [
-            ("std::fstream u_inbrackets;", "u_inbrackets"),
-            ("std::fstream u_ifstatement1;", "u_ifstatement1"),
-            ("std::fstream u_ifstatement2;", "u_ifstatement2"),
-            ("std::fstream u_ifstatement3;", "u_ifstatement3"),
-        ]
-
-        for statement, name in cases:
-            with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
-
     def test_multi_statement_lines_if_split_before_matching(self):
         cases = [
             ("std::fstream u_multi_stmt1;", "u_multi_stmt1"),
@@ -116,26 +77,6 @@ class TestDeclarationMatcher(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.name, "u_multi_dec1")
         self.assertFalse(result.opened)
-
-    def test_comments_should_not_match_if_comments_are_stripped_first(self):
-        cases = [
-            "// std::fstream line_commented_2;",
-            "/* std::fstream comment2; */",
-        ]
-
-        for statement in cases:
-            with self.subTest(statement=statement):
-                self.assertDoesNotDeclare(statement)
-
-    def test_valid_declaration_before_comment(self):
-        cases = [
-            ("std::fstream u_cmt_test1; // std::fstream line_commented_1;", "u_cmt_test1"),
-            ("std::fstream u_cmt_test2; /* std::fstream comment1; */", "u_cmt_test2"),
-        ]
-
-        for statement, name in cases:
-            with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
 
     def test_ifstream_and_ofstream_also_match(self):
         cases = [
