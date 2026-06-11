@@ -11,16 +11,42 @@ def check_matcher(file):
         if match_with_dec(line):
             print(line)
 
-def check_parser(file):
+def test_parser(file):
+    fstreams = []
+
     parser = FileCloseParser(file=file)
     parser.walk_through_file()
+
     for fstream in parser.fstreams:
-        print(fstream)
+        name = fstream.name
+        print(name)
+        if name[0] == 'u':
+            assert not fstream.opened
+        elif name[0] == 'o':
+            assert fstream.opened
+        else:
+            raise RuntimeError(f"incorrect match")
+        fstreams.append(fstream.name)
+
+    for required in [
+        'uF1',
+        'uF2',
+        'uF3',
+        'uF4',
+        'oF1',
+        'oF2',
+        'oF3',
+        'oF4',
+        'oF5',
+        'oF6',
+        'oF7',
+        'oF8',
+        'u_cmt_test1',
+        'u_cmt_test2'
+    ]:
+        assert required in fstreams
+
 
 if __name__ == "__main__":
-    data = sys.stdin.read() # capture stdin so I can reuse the data in its buffer
-    buf1 = StringIO(data)
-    buf2 = StringIO(data)
-    check_matcher(buf1)
-    print()
-    check_parser(buf2)
+    with sys.stdin as file:
+        test_parser(file)
