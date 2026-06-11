@@ -48,12 +48,14 @@ def test_parser(file):
     parser = FileCloseParser(file=file)
     parser.walk_through_file()
 
-    for fstream in parser.fstreams:
+    for fstream in parser.fstreams.values():
         name = fstream.name
         found.append(fstream.name)
 
         print(name)
         assert name in SHOULD_HAVE_FOUND, f"FAIL: FALSE POSITIVE: {name}"
+
+        assert not fstream.closed, f"FAIL: {name} marked as closed for some reason?"
 
         if name[0] == 'u':
             assert not fstream.opened, f"FAIL: {name} incorrectly marked as opened"
