@@ -9,7 +9,7 @@ class FileCloseParser:
         self.source_code = file
         self.fstreams = {}
 
-        self.match_with_dec: Callable[[str], Optional[FileCloseParser.Fstream]] = FileCloseParser.declaration_matcher()
+        self.match_with_dec: Callable[[str], list[FileCloseParser.Fstream]] = FileCloseParser.declarations_matcher()
         self.match_with_open: Callable[[str], Optional[str]] = FileCloseParser.open_matcher()
         self.match_with_close: Callable[[str], Optional[str]] = FileCloseParser.close_matcher()
 
@@ -22,33 +22,56 @@ class FileCloseParser:
     # static methods that return a function that does some regex shih
 
     @staticmethod
-    def declaration_matcher() -> Callable[[str], Optional["FileCloseParser.Fstream"]]:
+    def declarations_matcher() -> Callable[[str], list["FileCloseParser.Fstream"]]:
         pattern = re.compile(
             r"""
             (?:(?:const|static|extern|mutable|register)\s+)*
             (?:std::)?
             (?:f|if|of)stream
             \s+
-            (?P<name>[A-Za-z_]\w*)
-            \s*
-            (?:
-                (?P<init>\([^;]*\)|\{[^;]*\})\s*
-            )?
+            (?P<declarations>.+?)
             ;?
             """,
             re.VERBOSE,
         )
 
-        def matcher(statement: str) -> Optional[FileCloseParser.Fstream]:
+        single_decl_pattern = re.compile(
+            r"""
+            ^
+            \s*
+            (?P<name>[A-Za-z_]\w*)
+            \s*
+            (?P<init>\([^;]*\)|\{[^;]*\})?
+            \s*
+            $
+            """,
+            re.VERBOSE,
+        )
+
+        def matcher(statement: str) -> list[FileCloseParser.Fstream]:
             match = pattern.fullmatch(statement)
             if not match:
-                return None
+                return []
 
-            init = match.group("init")
-            return FileCloseParser.Fstream(
-                name=match.group("name"),
-                opened=init is not None and bool(re.search(r"[^(){}\s]", init)),
-            )
+            declarations = match.group("declarations")
+            fstreams: list[FileCloseParser.Fstream] = []
+
+            for declaration in declarations.split(","):
+                single_match = single_decl_pattern.fullmatch(declaration)
+
+                if not single_match:
+                    return []
+
+                init = single_match.group("init")
+
+                fstreams.append(
+                    FileCloseParser.Fstream(
+                        name=single_match.group("name"),
+                        opened=init is not None and bool(re.search(r"[^(){}\s]", init)),
+                    )
+                )
+
+            return fstreams
 
         return matcher
 
@@ -114,8 +137,9 @@ class FileCloseParser:
             self.process_statement(line.strip())
 
     def process_statement(self, statement:str) -> None:
-        if (fstream := self.match_with_dec(statement)):
-            self.fstreams[fstream.name] = fstream
+        if (fstreams := self.match_with_dec(statement)):
+            for fstream in fstreams:
+                self.fstreams[fstream.name] = fstream
 
         elif (fstream_name := self.match_with_open(statement)):
             self.fstreams[fstream_name].opened = True

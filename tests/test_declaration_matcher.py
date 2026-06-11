@@ -11,21 +11,20 @@ from filecloseparser import FileCloseParser
 
 class TestDeclarationMatcher(unittest.TestCase):
     def setUp(self):
-        self.match_decl = FileCloseParser.declaration_matcher()
+        self.match_decl = FileCloseParser.declarations_matcher()
 
-    def assertDeclares(self, statement: str, name: str, opened: bool = False):
-        result = self.match_decl(statement)
+    def assertDeclaresSingle(self, statement: str, name: str, opened: bool = False):
+        results = self.match_decl(statement)
+        self.assertEqual(len(results), 1, msg=f"Expected single declaration, got {len(results)}: {statement!r}")
 
-        self.assertIsNotNone(result, msg=f"Expected declaration match: {statement!r}")
-        if not result: # I just need this here so my IDE's linter (or whatever you call it) stops giving me squiggly lines in the next three lines
-            exit(67)
+        result = results[0]
         self.assertEqual(result.name, name)
         self.assertEqual(result.opened, opened)
         self.assertFalse(result.closed)
 
     def assertDoesNotDeclare(self, statement: str):
         result = self.match_decl(statement)
-        self.assertIsNone(result, msg=f"Expected no declaration match: {statement!r}")
+        self.assertEqual(len(result), 0, msg=f"Expected no declaration match: {statement!r}")
 
     def test_unopened_declarations(self):
         cases = [
@@ -37,7 +36,7 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name, opened=False)
+                self.assertDeclaresSingle(statement, name, opened=False)
 
     def test_opened_parentheses_initializations(self):
         cases = [
@@ -49,7 +48,7 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name, opened=True)
+                self.assertDeclaresSingle(statement, name, opened=True)
 
     def test_opened_brace_initializations(self):
         cases = [
@@ -61,7 +60,7 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name, opened=True)
+                self.assertDeclaresSingle(statement, name, opened=True)
 
     def test_multi_statement_lines_if_split_before_matching(self):
         cases = [
@@ -71,16 +70,29 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
+                self.assertDeclaresSingle(statement, name)
 
     def test_multi_declaration_line_current_expected_behavior(self):
-        result = self.match_decl("std::fstream u_multi_dec1, u_multi_dec2;")
+        results = self.match_decl("std::fstream u_multi_dec1, u_multi_dec2;")
 
-        self.assertIsNotNone(result)
-        if not result: # just need this here so my IDE doesn't show red squiggly lines, the bugger.
-            exit(67)
-        self.assertEqual(result.name, "u_multi_dec1")
-        self.assertFalse(result.opened)
+        self.assertEqual(len(results), 2)
+
+        self.assertEqual(results[0].name, "u_multi_dec1")
+        self.assertFalse(results[0].opened)
+
+        self.assertEqual(results[1].name, "u_multi_dec2")
+        self.assertFalse(results[1].opened)
+
+    def test_multi_declaration_line_with_initialization(self):
+        results = self.match_decl('std::fstream file1("hello.txt"), file2{};')
+
+        self.assertEqual(len(results), 2)
+
+        self.assertEqual(results[0].name, "file1")
+        self.assertTrue(results[0].opened)
+
+        self.assertEqual(results[1].name, "file2")
+        self.assertFalse(results[1].opened)
 
     def test_ifstream_and_ofstream_also_match(self):
         cases = [
@@ -94,7 +106,7 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name, opened in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name, opened)
+                self.assertDeclaresSingle(statement, name, opened)
 
     def test_qualifiers(self):
         cases = [
@@ -107,7 +119,7 @@ class TestDeclarationMatcher(unittest.TestCase):
 
         for statement, name in cases:
             with self.subTest(statement=statement):
-                self.assertDeclares(statement, name)
+                self.assertDeclaresSingle(statement, name)
 
     def test_negative_cases(self):
         cases = [
