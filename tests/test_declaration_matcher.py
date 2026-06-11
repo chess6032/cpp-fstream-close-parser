@@ -17,6 +17,8 @@ class TestDeclarationMatcher(unittest.TestCase):
         result = self.match_decl(statement)
 
         self.assertIsNotNone(result, msg=f"Expected declaration match: {statement!r}")
+        if not result: # I just need this here so my IDE's linter (or whatever you call it) stops giving me squiggly lines in the next three lines
+            exit(67)
         self.assertEqual(result.name, name)
         self.assertEqual(result.opened, opened)
         self.assertFalse(result.closed)
@@ -75,6 +77,8 @@ class TestDeclarationMatcher(unittest.TestCase):
         result = self.match_decl("std::fstream u_multi_dec1, u_multi_dec2;")
 
         self.assertIsNotNone(result)
+        if not result: # just need this here so my IDE doesn't show red squiggly lines, the bugger.
+            exit(67)
         self.assertEqual(result.name, "u_multi_dec1")
         self.assertFalse(result.opened)
 
