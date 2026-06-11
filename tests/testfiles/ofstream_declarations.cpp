@@ -9,7 +9,7 @@ This contains all possible ways we'd expect a student to format a
 declaration or initialization of an std::ofstream.
 */
 
-int main() {
+int main(int argc, char *argv[]) {
     string filepath = "hello.txt";
 
     ofstream uF1;
@@ -31,4 +31,23 @@ int main() {
     // std::ofstream line_commented_2;
     std::ofstream u_cmt_test2; /* std::ofstream comment1; */
     /* std::ofstream comment2; */
+
+    // different indentations
+std::ofstream u_indent0;
+ std::ofstream u_indent1;
+  std::ofstream u_indent2;
+   std::ofstream u_indent3;
+    std::ofstream u_indent4;
+                                std::ofstream u_indent_many;
+	std::ofstream u_indent_t1;
+				std::ofstream u_indent_t4;
+
+    { std::ofstream u_inbrackets; }
+    if (argc > 1) {
+        std::ofstream u_ifstatement1;
+    }
+    if (argc > 2) { std::ofstream u_ifstatement2; }
+    if (argc > 3) std::ofstream u_ifstatement3;
+
+    return 0;
 }

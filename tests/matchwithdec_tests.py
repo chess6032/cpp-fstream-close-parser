@@ -42,9 +42,23 @@ def test_parser(file):
         'oF7',
         'oF8',
         'u_cmt_test1',
-        'u_cmt_test2'
+        'u_cmt_test2',
+        'u_indent0',
+        'u_indent1',
+        'u_indent2',
+        'u_indent3',
+        'u_indent4',
+        'u_indent_many',
+        'u_indent_t1',
+        'u_indent_t4',
+        'u_ifstatement1',
+        'u_ifstatement2',
+        'u_ifstatement3',
     ]:
-        assert required in fstreams
+        try:
+            assert required in fstreams, f"FAIL: MATCH MISS: {required}"
+        except AssertionError as e:
+            print(e)
 
 
 if __name__ == "__main__":
