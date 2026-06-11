@@ -39,6 +39,10 @@ def test_parser(file):
         'u_ifstatement1',
         'u_ifstatement2',
         'u_ifstatement3',
+        'u_multi_stmt1', 
+        'u_multi_stmt2',
+        'u_multi_dec1', 
+        'u_multi_dec2',
     ]
 
     parser = FileCloseParser(file=file)

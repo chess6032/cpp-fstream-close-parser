@@ -49,5 +49,8 @@ std::fstream u_indent0;
     if (argc > 2) { std::fstream u_ifstatement2; }
     if (argc > 3) std::fstream u_ifstatement3;
 
+    std::fstream u_multi_stmt1; std::fstream u_multi_stmt2;
+    std::fstream u_multi_dec1, u_multi_dec2;
+
     return 0;
 }
