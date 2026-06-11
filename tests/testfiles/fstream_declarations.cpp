@@ -26,4 +26,9 @@ int main() {
     fstream oF6{filepath};
     std::fstream oF7{"hello.txt"};
     std::fstream oF8{filepath};
+
+    std::fstream fine1; // std::fstream line_commented_1;
+    // std::fstream line_commented_2;
+    std::fstream fine2; /* std::fstream comment1; */
+    /* std::fstream comment2; */
 }
